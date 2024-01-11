@@ -70,11 +70,8 @@ function App() {
   const [turnNumber, setTurnNumber] = useState(0);
 
   const nextTurn = () => {
-
-    console.log("game order: ", gameData.order);
     
     setTurnNumber(prevCount => {
-      console.log("prev turn num:", prevCount);
 
       let newCount = prevCount + 1;
 
@@ -83,25 +80,19 @@ function App() {
         
         //if all turns done
         if (newCount == gameData.order.length){
-          console.log("all turns completed");
           socket.emit('allTurnsComplete', roomID);
           return newCount;
     
         } else { //else keep going
-          console.log("game not done");
           if (socket.id === gameData.order[newCount].id) {
-            console.log("it's now your turn");
-            console.log("my id: ", socket.id, " order list: ", gameData.order);
             handleSetYourTurn(true);
           } else {
-            console.log("it's still not your turn");
             handleSetYourTurn(false);
           }
 
         }
       }
 
-      console.log("current turn num:", newCount);
       return newCount;
 
       });
@@ -121,7 +112,6 @@ function App() {
   const handleClueSubmit = (clue) => {
     socket.emit("clueSubmitted", clue, roomID);
     setCluesList((prevClues) => [...prevClues, clue]);
-    console.log("setting turn false");
     handleSetYourTurn(false);
   };
 

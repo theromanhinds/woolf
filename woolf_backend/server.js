@@ -40,7 +40,6 @@ io.on('connection', (socket) => {
   socket.on('createRoom', (roomID, userName) => {
 
     if (gameRooms.has(roomID)) {
-      console.log("error: room already exists");
       return;
     }
 
@@ -63,7 +62,6 @@ io.on('connection', (socket) => {
     const room = gameRooms.get(roomID);
 
     if (room.length >= 8) {
-      console.log(`Player ${userName} faiiled to join full room ${roomID}`);
       socket.emit('roomFull'); //ADD FRONTEND FXN TO CATCH THIS ERROR
       return;
     }
@@ -75,16 +73,13 @@ io.on('connection', (socket) => {
     console.log(`Player ${userName} joined room ${roomID}`);
 
     // Emit updated player list to all clients in the lobby
-    console.log('Emitting updatedRoom:', room);
     socket.emit('updateRoom', room);
     io.to(roomID).emit('updateRoom', room);
-    console.log("All players received updated room.");
     
   });
 
   socket.on('disconnect', () => {
 
-    console.log("user disconnecting");
 
     //find room of socket that disconnected
     for (const [room, players] of gameRooms) {
@@ -96,13 +91,11 @@ io.on('connection', (socket) => {
         //if room now empty
         if (updatedRoom.length == 0){
           gameRooms.delete(disconnectedPlayer.room)
-          console.log(`Room ${disconnectedPlayer.room} empty, deleting room.`);
           return;
         }
 
         if (disconnectedPlayer.host){
           updatedRoom[0].host = true;
-          console.log(`New host in room: ${disconnectedPlayer.room}`);
         }
 
         gameRooms.set(disconnectedPlayer.room, updatedRoom);
@@ -120,7 +113,6 @@ io.on('connection', (socket) => {
 
   socket.on('startGame', (roomID) => {
 
-    console.log(`Game ${roomID} is starting!`);
     
     gameData = {
       order: null,
@@ -139,21 +131,15 @@ io.on('connection', (socket) => {
       playerOrder[j] = temp;
     }
 
-    console.log("--------------");
 
     gameData.order = playerOrder;
-    console.log("new player order is: ", gameData.order);
 
-    console.log("--------------");
 
     gameData.topic = 'Countries';
-    console.log("your topic is: ", gameData.topic);
 
-    console.log("--------------");
 
     //SET GAME BOARD AND CHOOSE ANSWER
     gameData.board = gameBoards.get('Countries'); //randomize in future
-    console.log("game board is ", gameData.board);
 
     //shuffle and select answer from board
     let boardWords = gameBoards.get('Countries').slice(0);
@@ -164,40 +150,31 @@ io.on('connection', (socket) => {
       boardWords[j] = temp;
     }
 
-    console.log("--------------");
-
     gameData.answer = boardWords[0];
-    console.log("answer is: ", gameData.answer);
 
-    console.log("--------------");
 
     //SET PLAYER ROLES
     let woolfIndex = Math.floor(Math.random() * (playerOrder.length));
-    console.log("woolf index is: ", woolfIndex)
     let playerRoles = playerOrder.slice(0);
     for (let i = 0; i < playerRoles.length; i++) {
       if (i == woolfIndex){
         playerRoles[i].role = 'woolf';
-        console.log("this player is woolf", playerRoles[i])
       } else {
         playerRoles[i].role = 'sheep';
       }
     }
     
     gameData.roles = playerRoles;
-    console.log("Here are the updated player roles: ", playerRoles);
     io.to(roomID).emit('gameStarted', gameData);
-    console.log("here's all the data", gameData);
 
   });
   
   socket.on('clueSubmitted', (clue, roomID) => {
-    console.log(`sending clue: ${clue} to room: ${roomID}`);
     socket.to(roomID).emit("newClue", clue);
   });
 
   socket.on('nextTurn', (turn) => {
-    console.log("it's turn number,", turn);
+    console.log("turn number: ", turn);
   })
 
   socket.on('allTurnsComplete', (roomID) => {
