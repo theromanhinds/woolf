@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
 
-
+    console.log("a user disconnected");
     //find room of socket that disconnected
     for (const [room, players] of gameRooms) {
       const disconnectedPlayer = players.find(player => player.id === socket.id);
@@ -111,37 +111,43 @@ io.on('connection', (socket) => {
     
   });
 
-  socket.on('startGame', (roomID) => {
+  socket.on('checkRoomExistence', (roomID, callback) => {
+    // Perform logic to check if the room exists
+    console.log("checking for room, ", roomID);
+    if (gameRooms.has(roomID)) {
+      callback(true); 
+    } else {
+      console.log(`room ${roomID} doesn't exist`);
+      callback(false);
+    }
+  });
 
+  socket.on('startGame', (roomID) => {
     
     gameData = {
-      order: null,
+      players: null,
       topic: null,
       board: null,
-      answer: null,
-      roles: null
+      answer: null
     };
 
-    //SET PLAYER ORDER
-    let playerOrder = gameRooms.get(roomID).slice(0);
-    for (var i = playerOrder.length - 1; i > 0; i--) {
+    //SHUFFLE PLAYER ORDER
+    let playerList = gameRooms.get(roomID).slice(0);
+    for (var i = playerList.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
-      var temp = playerOrder[i];
-      playerOrder[i] = playerOrder[j];
-      playerOrder[j] = temp;
+      var temp = playerList[i];
+      playerList[i] = playerList[j];
+      playerList[j] = temp;
     }
 
-
-    gameData.order = playerOrder;
-
-
-    gameData.topic = 'Countries';
-
+    gameData.players = playerList;
 
     //SET GAME BOARD AND CHOOSE ANSWER
+    //HARD-CODED FOR TESTING
+    gameData.topic = 'Countries';    
     gameData.board = gameBoards.get('Countries'); //randomize in future
 
-    //shuffle and select answer from board
+    //SHUFFLE BOARD WORDS AND SELECT ANSWER
     let boardWords = gameBoards.get('Countries').slice(0);
     for (var i = boardWords.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -152,19 +158,18 @@ io.on('connection', (socket) => {
 
     gameData.answer = boardWords[0];
 
-
     //SET PLAYER ROLES
-    let woolfIndex = Math.floor(Math.random() * (playerOrder.length));
-    let playerRoles = playerOrder.slice(0);
-    for (let i = 0; i < playerRoles.length; i++) {
+    let woolfIndex = Math.floor(Math.random() * (playerList.length));
+    for (let i = 0; i < playerList.length; i++) {
       if (i == woolfIndex){
-        playerRoles[i].role = 'woolf';
+        playerList[i].role = 'woolf';
       } else {
-        playerRoles[i].role = 'sheep';
+        playerList[i].role = 'sheep';
       }
     }
-    
-    gameData.roles = playerRoles;
+
+    console.log("game data generated for room: ", roomID);
+    //SEND GAME DATA TO ALL PLAYERS
     io.to(roomID).emit('gameStarted', gameData);
 
   });
@@ -173,8 +178,8 @@ io.on('connection', (socket) => {
     socket.to(roomID).emit("newClue", clue);
   });
 
-  socket.on('nextTurn', (turn) => {
-    console.log("turn number: ", turn);
+  socket.on('nextTurn', (turn, roomID) => {
+    console.log("turn number: ", turn, " in room: ", roomID);
   })
 
   socket.on('allTurnsComplete', (roomID) => {
