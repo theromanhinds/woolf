@@ -37,7 +37,7 @@ function ClueBox({onNextStep}) {
             socket.off('newClue');  // Clean up any subscriptions or side effects when the component unmounts
         };
         
-      }, [cluesList]);
+      }, [handleNewClue, nextTurn, cluesList]);
 
       useEffect(() => {
         

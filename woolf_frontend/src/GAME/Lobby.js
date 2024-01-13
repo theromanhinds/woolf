@@ -40,7 +40,7 @@ function Lobby({onNextStep}) {
                 handleSetIsHost(false);
             }
         }
-      }, [lobby]);
+      }, [handleSetLobby, handleSetIsHost, lobby]);
 
       // Listen for game start
     useEffect(() => {

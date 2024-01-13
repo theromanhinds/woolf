@@ -28,7 +28,7 @@ function Start() {
 
   return (
     <div className='StartContainer'>
-      <img src={logo} className='StartLogo'/>
+      <img alt="logo" src={logo} className='StartLogo'/>
       {currentStep === 1 && <EnterName onNextStep={handleNextStep} />}
       {currentStep === 2 && <CreateJoin onNextStep={handleNextStep} />}
       {currentStep === 3 && <EnterRoom />}
