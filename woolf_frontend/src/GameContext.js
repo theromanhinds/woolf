@@ -82,10 +82,10 @@ export const GameProvider = ({ children }) => {
     console.log("player order: ", newGameData.players)
 
     for(var obj of newGameData.players) {
-      if (obj.id == socket.id) {
+      if (obj.id === socket.id) {
         setRole(obj.role);
       }
-      if (obj.role == 'WOOLF') {
+      if (obj.role === 'WOOLF') {
         setWoolf(obj.userName);
       }
     }

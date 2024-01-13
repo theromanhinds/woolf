@@ -23,7 +23,7 @@ function Game() {
  
   return (
     <div className='GameContainer'>
-      <img src={logo} className='GameLogo'/>
+      <img alt="logo" src={logo} className='GameLogo'/>
       <GameInfo/>
         {currentStep === 1 && <Lobby onNextStep={handleNextStep}/>}
         {currentStep === 2 && <GameBoard handleNextStep={handleNextStep} />}

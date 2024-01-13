@@ -6,7 +6,7 @@ import { useGameContext } from '../GameContext';
 
 function Lobby({onNextStep}) {
 
-    const { lobby, handleSetLobby, isHost, handleSetIsHost, handleGameStartRequest, gameStarted, handleGameStarted } = useGameContext();
+    const { lobby, handleSetLobby, isHost, handleSetIsHost, handleGameStartRequest, handleGameStarted } = useGameContext();
 
     const handleStartButtonClick = () => {
 
@@ -33,8 +33,8 @@ function Lobby({onNextStep}) {
 
         //confirm host in new lobby
         if (lobby.length > 0){
-            const hostPlayer = lobby.find(player => player.host == true);
-            if (hostPlayer.id == socket.id) {
+            const hostPlayer = lobby.find(player => player.host === true);
+            if (hostPlayer.id === socket.id) {
                 handleSetIsHost(true);
             } else {
                 handleSetIsHost(false);
