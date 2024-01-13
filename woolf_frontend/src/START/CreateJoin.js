@@ -4,7 +4,7 @@ import { useGameContext } from '../GameContext';
 
 function CreateJoin({onNextStep}) {
 
-  const { handleCreateRoomID } = useGameContext();
+  const { userName, handleCreateRoomID } = useGameContext();
 
   const handleJoinButtonClick = () => { onNextStep(); };
 
@@ -12,9 +12,9 @@ function CreateJoin({onNextStep}) {
 
   return (
     <div className='Container'>
-        Woolf
-        <button onClick={handleCreateButtonClick}>Create Game</button>
-        <button onClick={handleJoinButtonClick}>Join Game</button>
+        <h3 className='StartText'>WELCOME: {userName}!</h3>
+        <button className='StartButton' onClick={handleCreateButtonClick}>Create Game</button>
+        <button className='StartButton' onClick={handleJoinButtonClick}>Join Game</button>
     </div>
   )
 }

@@ -17,11 +17,10 @@ function GameBoard({handleNextStep}) {
   }
  
   return (
-    <div>
-        <h3>GameBoard</h3>
-        <p>Name: {userName}, Room: {roomID}</p>
-        <p>Role: {role}, Topic: {topic}, Answer: {role == 'woolf' ? '???' : answer}</p>
-        <div className="BoardContainer">
+    <div className='BoardContainer'>
+      <h2 className='GameText'>TOPIC: {topic}</h2>
+        <h3 className='GameText'>Role: {role} / Answer: {role == 'WOOLF' ? '???' : answer}</h3>
+        <div className="Board">
             {board.map((word, index) => (
             <div key={index} className="BoardWord">
             {word} </div>

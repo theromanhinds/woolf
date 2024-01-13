@@ -57,14 +57,14 @@ function Lobby({onNextStep}) {
       
 
     return (
-        <div>
-        <h2>Lobby</h2>
-            <ul>
+        <div className='Container'>
+        <h1 className='GameText'>LOBBY</h1>
+            <ul className='PlayerList'>
             {lobby.map((player) => (
                 <li key={player.id}>{player.userName} {player.host && <span>(Host)</span>}</li>
             ))}
             </ul>
-            {isHost ? (<button onClick={handleStartButtonClick}>Start Game</button>) : (<p>Waiting for Host...</p>)}
+            {isHost ? (<button className='GameButton' onClick={handleStartButtonClick}>Start Game</button>) : (<h3 className='LobbyText'>WAITING FOR HOST...</h3>)}
         </div>
     )
 }

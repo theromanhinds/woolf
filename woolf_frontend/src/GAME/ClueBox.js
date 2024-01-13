@@ -11,14 +11,17 @@ function ClueBox({onNextStep}) {
 
     const verifyClueSubmit = () => {
 
-        if (clue.trim() !== '') {
+        if (clue) {
+            if (clue.trim() !== '') {
             handleClueSubmit(clue);
             resetClue(); // Clear the input after submitting
+            }
         }
     }
 
     //check for your turn at start of game
     useEffect(() => {
+        console.log("reset turn num ", turnNumber);
         checkTurn(turnNumber);
     }, [])
     
@@ -49,19 +52,25 @@ function ClueBox({onNextStep}) {
 
 
   return (
-    <div className='ClueBox'>
-
-        <h3>Clues</h3>
+    <div className='ClueBoxContainer'>
+        <div className='ClueBox'>
+        
+        <h2 className='BoardText'>CLUES</h2>
+        <p>{yourTurn ? "It's YOUR turn!" : "It's NOT your turn!"}</p>
             <ul> {cluesList.map((submittedClue, index) => (
                 <li key={index}>{submittedClue}</li>
                 ))}
             </ul>
-
-        <input type="text"
-        value={clue}
-        onChange={handleClueChange}
-        disabled={!yourTurn}></input>
-        <button disabled={!yourTurn} onClick={verifyClueSubmit}>Send</button>
+        <div className='ClueSubmitContainer'>
+            <input type="text"
+            value={clue}
+            onChange={handleClueChange}
+            disabled={!yourTurn}
+            maxLength="16"
+            className='ClueInput'></input>
+            <button className='ClueSubmit' disabled={!yourTurn} onClick={verifyClueSubmit}>SEND</button>
+        </div>
+    </div>
     </div>
   )
 }

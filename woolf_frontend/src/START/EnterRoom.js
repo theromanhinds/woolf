@@ -1,7 +1,6 @@
 import React from 'react'
 import '../App.css'
 import { useGameContext } from '../GameContext';
-import socket from '../GAME/socket';
 
 function EnterRoom() {
 
@@ -13,9 +12,9 @@ function EnterRoom() {
 
   return (
     <div className='Container'>
-        Enter Room Code:
-        <input input="text" value={roomID} maxLength="6" onChange={handleRoomIDChange} />
-        <button className='NextButton' onClick={handleJoinButtonClick}>NEXT</button>
+        <h3 className='StartText'>ENTER ROOM CODE:</h3>
+        <input className='StartInput' input="text" value={roomID} maxLength="6" onChange={handleRoomIDChange} />
+        <button className='StartButton' onClick={handleJoinButtonClick}>NEXT</button>
     </div>
   )
 }

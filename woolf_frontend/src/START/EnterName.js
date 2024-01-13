@@ -14,9 +14,9 @@ function EnterName({onNextStep}) {
 
   return (
     <div className='Container'>
-        Enter Name:
-        <input input="text" value={userName} maxLength="8" onChange={handleNameChange}/>
-        <button className='NextButton' onClick={handleNextButtonClick}>NEXT</button>
+        <h3 className='StartText'>ENTER NAME:</h3>
+        <input className="StartInput" input="text" value={userName} maxLength="8" onChange={handleNameChange}/>
+        <button className='StartButton' onClick={handleNextButtonClick}>NEXT</button>
     </div>
   )
 }

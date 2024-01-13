@@ -1,15 +1,25 @@
 import './App.css';
 import { Routes, Route } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import socket from './GAME/socket';
 
 import Game from './GAME/Game';
 import Start from './START/Start';
 
-import socket from './GAME/socket';
-
 function App() {
   
-  
+  useEffect(() => {
+    // Listen for the disconnect event
+    socket.on('disconnect', () => {
+      alert("You were disconnected! Please refresh.");
+    });
+
+    return () => {
+      // Clean up event listener when component unmounts
+      socket.off('disconnect');
+    };
+  }, []);
+
   return (
       <div className="App">
         <Routes>

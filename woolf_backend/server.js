@@ -185,9 +185,9 @@ io.on('connection', (socket) => {
     let woolfIndex = Math.floor(Math.random() * (playerList.length));
     for (let i = 0; i < playerList.length; i++) {
       if (i == woolfIndex){
-        playerList[i].role = 'woolf';
+        playerList[i].role = 'WOOLF';
       } else {
-        playerList[i].role = 'sheep';
+        playerList[i].role = 'SHEEP';
       }
     }
 
@@ -259,6 +259,13 @@ io.on('connection', (socket) => {
       newGameRequests.set(roomID, []);
     }
     
+  });
+
+  socket.on('resetGame', (roomID) => {
+    
+    const room = gameRooms.get(roomID);
+    io.to(roomID).emit('updateRoom', room);
+
   });
 
 });

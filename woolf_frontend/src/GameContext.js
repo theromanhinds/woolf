@@ -41,6 +41,7 @@ export const GameProvider = ({ children }) => {
         navigate(`/game/${roomID}`);
       } else {
         console.error('Please enter a valid room ID.');
+        alert('Please Enter Valid Room Code.');
       }
     } catch (error) {
       console.error('Error checking room existence:', error);
@@ -64,11 +65,11 @@ export const GameProvider = ({ children }) => {
 
   const [gameStarted, setGameStarted] = useState(false);
 
-  const [role, setRole] = useState();
+  const [role, setRole] = useState('');
 
-  const [woolf, setWoolf] = useState();
+  const [woolf, setWoolf] = useState('');
 
-  const [board, setBoard] = useState();
+  const [board, setBoard] = useState([]);
 
   const handleGameStarted = (newGameData) => {
 
@@ -84,7 +85,7 @@ export const GameProvider = ({ children }) => {
       if (obj.id == socket.id) {
         setRole(obj.role);
       }
-      if (obj.role == 'woolf') {
+      if (obj.role == 'WOOLF') {
         setWoolf(obj.userName);
       }
     }
@@ -129,7 +130,7 @@ export const GameProvider = ({ children }) => {
   const [turnNumber, setTurnNumber] = useState(0);
 
   const checkTurn = (turnCount) => {
-
+      console.log("sock id: ", socket.id, " and order id: ", order[turnCount].id);
       if (socket.id === order[turnCount].id) {
         handleSetYourTurn(true);
       } else {
@@ -137,36 +138,6 @@ export const GameProvider = ({ children }) => {
       }
     
   };
-
-  // const nextTurn = async () => {
-
-  //   let newCount;
-
-  //   setTurnNumber(prevCount => {
-  //     console.log("prev Count: ", prevCount);
-  //     newCount = prevCount + 1;
-  //     return newCount;
-  //   }); 
-
-  //   try {
-  //     const response = await new Promise((resolve, reject) => {
-  //       console.log("count before emitting: ", newCount);
-  //       socket.emit('checkTurnsComplete', order, newCount, roomID, (exists) => {
-  //         resolve(exists);
-  //       });
-  //     });
-      
-  //     if (response) {
-  //       socket.emit('allTurnsComplete', roomID);
-  //     } else {
-  //       console.log("new Count: ", newCount);
-  //       checkTurn(newCount);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error checking if game over:', error);
-  //   }
-        
-  // }
 
   const nextTurn = async () => {
     try {
@@ -206,13 +177,16 @@ export const GameProvider = ({ children }) => {
 
   const [voted, setVoted] = useState(false);
 
+  const [myVote, setMyVote] = useState('');
+
   const handleVoted = (vote) => {
     socket.emit('playerVoted', roomID, vote, order);
     setVoted(true);
+    setMyVote(vote);
   }
 
   const [mostVoted, setMostVoted] = useState('');
- 
+  
   const handleSetMostVoted = (mostVoted) => {
     setMostVoted(mostVoted);
   }
@@ -225,7 +199,21 @@ export const GameProvider = ({ children }) => {
   }
 
   const resetGame = () => {
+    
+    setGameStarted(false);
+    setRole('');
+    setBoard([]);
+    setTopic('');
+    setAnswer('');
+    setOrder([]);
+    setCluesList([]);
+    setTurnNumber(0);
+    setVoted(false);
+    setMostVoted('');
+    setReady(false);
+
     console.log("game needs to be reset");
+    socket.emit('resetGame', roomID);
   }
 
   const contextValue = {
@@ -260,6 +248,7 @@ export const GameProvider = ({ children }) => {
     checkTurn,
     voted,
     handleVoted,
+    myVote,
     mostVoted,
     handleSetMostVoted,
     ready,

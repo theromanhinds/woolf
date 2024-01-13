@@ -22,15 +22,15 @@ function Answer({resetStep}) {
         return () => {
           socket.off('newRound');  
         };
-      }, []);
+      });
 
   return (
     <div>
-        <h3>Answer</h3>
-        <p>most voted: {mostVoted}</p>
-        <p>woolf: {woolf}</p>
-        <p>answer: {answer}</p>
-        <button disabled={ready} onClick={handleReadyButtonClick}>Ready</button>
+        <h1 className='GameText'>RESULTS</h1>
+        <h3 className='GameText'>MOST VOTED: {mostVoted}</h3>
+        <h3 className='GameText'>WOOLF: {woolf}</h3>
+        <h3 className='GameText'>ANWER: {answer}</h3>
+        <button className='ReadyButton' disabled={ready} onClick={handleReadyButtonClick}>RESTART</button>
     </div>
   )
 }
