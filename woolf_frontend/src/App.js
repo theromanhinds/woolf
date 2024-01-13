@@ -18,7 +18,7 @@ function App() {
       // Clean up event listener when component unmounts
       socket.off('disconnect');
     };
-  }, []);
+  });
 
   return (
       <div className="App">

@@ -53,7 +53,7 @@ function Lobby({onNextStep}) {
         return () => {
           socket.off('gameStarted');  // Clean up any subscriptions or side effects when the component unmounts
         };
-      }, []);
+      });
       
 
     return (

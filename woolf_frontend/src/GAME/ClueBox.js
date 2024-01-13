@@ -23,7 +23,7 @@ function ClueBox({onNextStep}) {
     useEffect(() => {
         console.log("reset turn num ", turnNumber);
         checkTurn(turnNumber);
-    }, [])
+    })
     
     //only called for receivers of a clue
     useEffect(() => {
@@ -48,7 +48,7 @@ function ClueBox({onNextStep}) {
         return () => {
           socket.off('startVoting');  
         };
-      }, []);
+      });
 
 
   return (

@@ -22,7 +22,7 @@ function Voting({onNextStep}) {
     return () => {
       socket.off('revealAnswer');  
     };
-  }, []);
+  });
 
   return (
     <div className='VotingContainer'>

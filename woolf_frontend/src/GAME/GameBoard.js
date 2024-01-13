@@ -1,6 +1,5 @@
 import React from 'react'
 import { useGameContext } from '../GameContext'
-import { useEffect } from 'react';
 import ClueBox from './ClueBox';
 
 function GameBoard({handleNextStep}) {
