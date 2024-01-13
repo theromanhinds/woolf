@@ -3,7 +3,7 @@ import socket from './socket';
 import { useGameContext } from '../GameContext';
 import { useEffect } from 'react';
 
-function ClueBox() {
+function ClueBox({onNextStep}) {
 
     const { clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, resetClue, yourTurn, nextTurn, turnNumber, checkTurn } = useGameContext();
 
@@ -17,13 +17,17 @@ function ClueBox() {
         }
     }
 
+    //check for your turn at start of game
     useEffect(() => {
-        
         checkTurn(turnNumber);
+    }, [])
+    
+    //only called for receivers of a clue
+    useEffect(() => {
 
-        socket.on('newClue', (newClue) => {
+        socket.on('newClue', (newClue) => { 
             handleNewClue(newClue);
-            nextTurn();
+            nextTurn(); 
         });
 
         return () => {
@@ -31,6 +35,18 @@ function ClueBox() {
         };
         
       }, [cluesList]);
+
+      useEffect(() => {
+        
+        socket.on('startVoting', () => {
+            onNextStep();
+         });
+                           
+        return () => {
+          socket.off('startVoting');  
+        };
+      }, []);
+
 
   return (
     <div className='ClueBox'>

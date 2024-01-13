@@ -27,6 +27,29 @@ const gameRooms = new Map();
 const gameBoards = new Map();
 gameBoards.set('Countries', ['America', 'England', 'Jamaica', 'Canada', 'France', 'Spain', 'Mexico', 'Italy', 'Argentina']);
 
+const gameVotes = new Map();
+
+const newGameRequests = new Map();
+
+function getMostVotedName(votes) {
+  const voteCounts = {};
+  votes.forEach((name) => {
+    voteCounts[name] = (voteCounts[name] || 0) + 1;
+  });
+
+  let mostVotedName = null;
+  let maxVotes = 0;
+
+  for (const name in voteCounts) {
+    if (voteCounts[name] > maxVotes) {
+      mostVotedName = name;
+      maxVotes = voteCounts[name];
+    }
+  }
+
+  return mostVotedName;
+}
+
 app.get('/', (req, res) => {
   res.send('Server is running.');
 });
@@ -43,7 +66,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    const room = [{id: socket.id, name: userName, room: roomID, host: true}]
+    const room = [{id: socket.id, userName: userName, room: roomID, host: true}]
     gameRooms.set(roomID, room);
 
     socket.join(roomID);
@@ -67,7 +90,7 @@ io.on('connection', (socket) => {
     }
     
     socket.join(roomID);
-    room.push({id: socket.id, name: userName, room: roomID, host: false});
+    room.push({id: socket.id, userName: userName, room: roomID, host: false});
     gameRooms.set(roomID, room);
 
     console.log(`Player ${userName} joined room ${roomID}`);
@@ -102,7 +125,7 @@ io.on('connection', (socket) => {
         //update all players in room with new list
         io.to(disconnectedPlayer.room).emit('updateRoom', updatedRoom);
 
-        console.log(`Player ${disconnectedPlayer.name} disconnected from room: ${disconnectedPlayer.room}`);
+        console.log(`Player ${disconnectedPlayer.userName} disconnected from room: ${disconnectedPlayer.room}`);
       }
     }
 
@@ -176,15 +199,67 @@ io.on('connection', (socket) => {
   
   socket.on('clueSubmitted', (clue, roomID) => {
     socket.to(roomID).emit("newClue", clue);
+   
   });
 
-  socket.on('nextTurn', (turn, roomID) => {
-    console.log("turn number: ", turn, " in room: ", roomID);
-  })
+  socket.on('checkTurnsComplete', (order, turnCount, roomID, callback) => {
+
+    console.log("checking turns for room, ", roomID);
+    console.log("turn num: ", turnCount, " total players: ", order.length);
+    if (turnCount == order.length){
+      console.log("all turns completed in room: ", roomID);
+      callback(true); 
+    } else {
+      console.log("turns not completed in room: ", roomID);
+      callback(false);
+    }
+
+
+  });
 
   socket.on('allTurnsComplete', (roomID) => {
-    console.log("all turns completed in room: ", roomID);
-  })
+    console.log("starting voting in room: ", roomID);
+    socket.emit('startVoting');
+  });
+
+  socket.on('playerVoted', (roomID, vote, order) => {
+
+    if (!gameVotes.has(roomID)){
+      gameVotes.set(roomID, [])
+    }
+
+    const votes = gameVotes.get(roomID);
+    votes.push(vote);
+    gameVotes.set(roomID, votes);
+
+    if (votes.length === order.length) {
+      const mostVoted = getMostVotedName(votes);
+
+      // Broadcast the most voted name to all clients
+      io.to(roomID).emit('revealAnswer', mostVoted);
+
+      // Clear the votes array for the next round
+      gameVotes.set(roomID, []);
+    }
+
+  });
+
+  socket.on('playerReady', (roomID, userName, order) => {
+
+    if (!newGameRequests.has(roomID)){
+      newGameRequests.set(roomID, [])
+    }
+
+    const requested = newGameRequests.get(roomID);
+    requested.push(userName);
+    newGameRequests.set(roomID, requested);
+
+    if (requested.length === order.length) {
+      io.to(roomID).emit('newRound');
+      newGameRequests.set(roomID, []);
+    }
+    
+  });
 
 });
 

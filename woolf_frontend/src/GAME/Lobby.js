@@ -61,7 +61,7 @@ function Lobby({onNextStep}) {
         <h2>Lobby</h2>
             <ul>
             {lobby.map((player) => (
-                <li key={player.id}>{player.name} {player.host && <span>(Host)</span>}</li>
+                <li key={player.id}>{player.userName} {player.host && <span>(Host)</span>}</li>
             ))}
             </ul>
             {isHost ? (<button onClick={handleStartButtonClick}>Start Game</button>) : (<p>Waiting for Host...</p>)}
