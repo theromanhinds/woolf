@@ -4,11 +4,11 @@ import { useGameContext } from '../GameContext';
 
 function CreateJoin({onNextStep}) {
 
-  const { userName, handleCreateRoomID } = useGameContext();
+  const { userName, handleCreateRoom } = useGameContext();
 
   const handleJoinButtonClick = () => { onNextStep(); };
 
-  const handleCreateButtonClick = () => { handleCreateRoomID(); };
+  const handleCreateButtonClick = () => { handleCreateRoom(); };
 
   return (
     <div className='Container'>

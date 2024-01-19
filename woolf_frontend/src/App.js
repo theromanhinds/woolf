@@ -1,23 +1,28 @@
 import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
-import socket from './GAME/socket';
+
+import { useGameContext } from './GameContext';
 
 import Game from './GAME/Game';
 import Start from './START/Start';
 
 function App() {
-  
+
+  const { socket } = useGameContext();
+
   useEffect(() => {
     // Listen for the disconnect event
-    socket.on('disconnect', () => {
-      alert("You were disconnected! Please refresh.");
-    });
+    if (socket){
+      socket.on('disconnect', () => {
+        alert("You were disconnected! Please refresh.");
+      });
 
-    return () => {
-      // Clean up event listener when component unmounts
-      socket.off('disconnect');
-    };
+      return () => {
+        // Clean up event listener when component unmounts
+        socket.off('disconnect');
+      };
+    }
   });
 
   return (

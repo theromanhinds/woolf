@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import socket from './GAME/socket';
+import { io } from 'socket.io-client';
 
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
+
+  const [socket, setSocket] = useState(null);
 
   const navigate = useNavigate();
 
@@ -15,38 +17,95 @@ export const GameProvider = ({ children }) => {
 
   const [roomID, setRoomID] = useState('');
   
-  const handleCreateRoomID = () => {
-    const newRoomID = Math.random().toString(36).substr(2, 6).toUpperCase();
-    setRoomID(newRoomID);
-    setIsHost(true);
-    socket.emit('createRoom', newRoomID, userName);
-    navigate(`/game/${newRoomID}`);
-  }
+  const handleConnect = () => {
+    return new Promise((resolve, reject) => {
+      try {
+        const newSocket = io('http://localhost:3001');
+
+        // Listen for successful connection
+        newSocket.on('connect', () => {
+          setSocket(newSocket);
+          console.log('Connection successful');
+          resolve(newSocket); // Resolve with the socket instance
+        });
+
+        // Listen for connection error
+        newSocket.on('connect_error', (error) => {
+          console.error('Error connecting to server:', error.message);
+          reject(error);
+        });
+
+      } catch (error) {
+        console.error('Error connecting to server:', error.message);
+        reject(error);
+      }
+    });
+  };
+
+  const handleCreateRoom = async () => {
+    
+    try {
+      const newSocket = await handleConnect();
+
+      const newRoomID = Math.random().toString(36).substr(2, 6).toUpperCase();
+      setRoomID(newRoomID);
+      setIsHost(true);
+
+      // newSocket.emit('createRoom', newRoomID, userName);
+
+      const newLobby = await new Promise((resolve) => {
+        newSocket.emit('createRoom', newRoomID, userName, (updatedLobby) => {
+          resolve(updatedLobby);
+        });
+      });
+  
+      // Update the lobby state with the response
+      setLobby(newLobby);
+
+      navigate(`/game/${newRoomID}`);
+    } catch (error) {
+      console.error('Error creating room:', error.message);
+      alert('Error connecting to server!');
+    }
+  };
 
   const handleEnterRoomID = (newRoomID) => { setRoomID(newRoomID); };
 
   const handleJoinRoom = async () => {
 
     try {
-      const response = await new Promise((resolve, reject) => {
-        socket.emit('checkRoomExistence', roomID, (exists) => {
-          resolve(exists);
-        });
-      });
+      console.log("trying to connect to server");
+      const newSocket = await handleConnect();
       
-      if (response) {
-        // Room exists, join it
-        setIsHost(false);
-        socket.emit('joinRoom', roomID, userName);
-        navigate(`/game/${roomID}`);
-      } else {
-        console.error('Please enter a valid room ID.');
-        alert('Please Enter Valid Room Code.');
+      try {
+        console.log("trying to join room");
+        const response = await new Promise((resolve, reject) => {
+          newSocket.emit('checkRoomExistence', roomID, (exists) => {
+            resolve(exists);
+          });
+        });
+        
+        if (response) {
+          // Room exists, join it
+          console.log("room exists, joining");
+          setIsHost(false);
+          console.log("socket emitting is: ", newSocket);
+          newSocket.emit('joinRoom', roomID, userName);
+          navigate(`/game/${roomID}`);
+        } else {
+          console.error('Please enter a valid room ID.');
+          alert('Please Enter Valid Room Code.');
+        }
+      } catch (error) {
+        console.error('Error checking room existence:', error);
       }
-    } catch (error) {
-      console.error('Error checking room existence:', error);
-    }
 
+
+    } catch (error) {
+      console.error('Error connecting socket:', error.message);
+      alert('Error connecting to server!');
+    }
+    
   };
 
   const [isHost, setIsHost] = useState(false);
@@ -79,8 +138,6 @@ export const GameProvider = ({ children }) => {
     setAnswer(newGameData.answer);
     setOrder(newGameData.players);
 
-    console.log("player order: ", newGameData.players)
-
     for(var obj of newGameData.players) {
       if (obj.id === socket.id) {
         setRole(obj.role);
@@ -89,8 +146,6 @@ export const GameProvider = ({ children }) => {
         setWoolf(obj.userName);
       }
     }
-
-
 
   };
 
@@ -102,7 +157,7 @@ export const GameProvider = ({ children }) => {
     setClue('');
   }
 
-  const [clue, setClue] = useState();
+  const [clue, setClue] = useState('');
   const handleSetClue = (newClue) => {
     setClue(newClue);
   }
@@ -130,15 +185,17 @@ export const GameProvider = ({ children }) => {
   const [turnNumber, setTurnNumber] = useState(0);
 
   const checkTurn = (turnCount) => {
-      console.log("sock id: ", socket.id, " and order id: ", order[turnCount].id);
+      console.log("current turn is: ", turnCount);
       if (socket.id === order[turnCount].id) {
+        console.log("it is your turn");
         handleSetYourTurn(true);
       } else {
+        console.log("it is NOT your turn");
         handleSetYourTurn(false);
       }
     
   };
-
+  
   const nextTurn = async () => {
     try {
       // Use a separate function to handle logic after state update
@@ -152,21 +209,26 @@ export const GameProvider = ({ children }) => {
         });
   
         if (response) {
+          console.log("all turns complete");
           socket.emit('allTurnsComplete', roomID);
         } else {
+          console.log("turns not complete");
           console.log("new Count: ", newCount);
           checkTurn(newCount);
         }
       };
   
       // Use setTurnNumber to update state and wait for the result
-      await setTurnNumber((prevCount) => {
-        console.log("prev Count: ", prevCount);
-        return prevCount + 1;
-      });
+      // await setTurnNumber((prevCount) => {
+      //   console.log("prev Count: ", prevCount);
+      //   return prevCount + 1;
+      // });
+
+      setTurnNumber(turnNumber + 1);
   
       // Get the updated turn count after the state is updated
       const newCount = turnNumber + 1;
+      console.log("new turn num: ", newCount);
   
       // Call the separate function with the updated count
       await handleTurnChange(newCount);
@@ -212,15 +274,15 @@ export const GameProvider = ({ children }) => {
     setMostVoted('');
     setReady(false);
 
-    console.log("game needs to be reset");
     socket.emit('resetGame', roomID);
   }
 
   const contextValue = {
+    socket,
     userName,
     roomID,
     handleNameUpdate,
-    handleCreateRoomID,
+    handleCreateRoom,
     handleEnterRoomID,
     handleJoinRoom,
     isHost,

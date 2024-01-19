@@ -1,11 +1,10 @@
 import React from 'react'
 import { useEffect } from 'react';
 import { useGameContext } from '../GameContext'
-import socket from './socket';
 
 function Voting({onNextStep}) {
 
-  const { board, order, cluesList, voted, handleVoted, myVote, handleSetMostVoted, } = useGameContext();
+  const { socket, board, order, cluesList, voted, handleVoted, myVote, handleSetMostVoted, } = useGameContext();
 
   const handleVoteButtonClick = (index) => {
     handleVoted(order[index].userName);

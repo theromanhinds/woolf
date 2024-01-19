@@ -1,11 +1,10 @@
 import React from 'react';
-import socket from './socket';
 import { useGameContext } from '../GameContext';
 import { useEffect } from 'react';
 
 function ClueBox({onNextStep}) {
 
-    const { clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, resetClue, yourTurn, nextTurn, turnNumber, checkTurn } = useGameContext();
+    const { socket, clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, resetClue, yourTurn, nextTurn, turnNumber, checkTurn } = useGameContext();
 
     const handleClueChange = (event) => { handleSetClue(event.target.value); };
 
@@ -21,9 +20,11 @@ function ClueBox({onNextStep}) {
 
     //check for your turn at start of game
     useEffect(() => {
-        console.log("reset turn num ", turnNumber);
+        console.log("checking if it's your turn");
         checkTurn(turnNumber);
-    })
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     
     //only called for receivers of a clue
     useEffect(() => {
@@ -37,7 +38,8 @@ function ClueBox({onNextStep}) {
             socket.off('newClue');  // Clean up any subscriptions or side effects when the component unmounts
         };
         
-      }, [handleNewClue, nextTurn, cluesList]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
 
       useEffect(() => {
         

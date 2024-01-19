@@ -1,12 +1,11 @@
 import React from 'react'
 import { useEffect } from 'react';
-import socket from './socket';
 
 import { useGameContext } from '../GameContext';
 
 function Lobby({onNextStep}) {
 
-    const { lobby, handleSetLobby, isHost, handleSetIsHost, handleGameStartRequest, handleGameStarted } = useGameContext();
+    const { socket, lobby, handleSetLobby, isHost, handleSetIsHost, handleGameStartRequest, handleGameStarted } = useGameContext();
 
     const handleStartButtonClick = () => {
 
@@ -19,12 +18,11 @@ function Lobby({onNextStep}) {
 
     }
 
+    //GET LOBBY TO UPDATE
     // Listen for updates to the lobby
     useEffect(() => {
-        
         socket.on('updateRoom', (newRoomData) => {
             try {
-                // Your logic here
                 handleSetLobby(newRoomData);
             } catch (error) {
                 console.error('Error processing initialPlayerList event:', error);
@@ -40,7 +38,9 @@ function Lobby({onNextStep}) {
                 handleSetIsHost(false);
             }
         }
-      }, [handleSetLobby, handleSetIsHost, lobby]);
+        
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
 
       // Listen for game start
     useEffect(() => {
@@ -55,7 +55,7 @@ function Lobby({onNextStep}) {
         };
       });
       
-
+      
     return (
         <div className='Container'>
         <h1 className='GameText'>LOBBY</h1>

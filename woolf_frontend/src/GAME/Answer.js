@@ -1,11 +1,10 @@
 import React from 'react'
 import { useGameContext } from '../GameContext'
 import { useEffect } from 'react';
-import socket from './socket';
 
 function Answer({resetStep}) {
 
-    const { woolf, answer, mostVoted, ready, handleReady, resetGame } = useGameContext();
+    const { socket, woolf, answer, mostVoted, ready, handleReady, resetGame } = useGameContext();
     
     const handleReadyButtonClick = () => {
         handleReady();

@@ -6,39 +6,37 @@ const cors = require('cors'); // Import the cors module
 const app = express();
 const server = http.createServer(app);
 
-// const io = require('socket.io')(server, {
-//   cors: {
-//     origin: 'http://localhost:3000', // Replace with your client's origin
-//     methods: ['GET', 'POST'],
-//     credentials: true,
-//   },
-// });
-
 const io = require('socket.io')(server, {
   cors: {
-    origin: 'https://woolfgame.netlify.app/', // Replace with your client's origin
+    origin: 'http://localhost:3000', // Replace with your client's origin
     methods: ['GET', 'POST'],
     credentials: true,
   },
 });
 
-io.origins('*:*');
+// const io = require('socket.io')(server, {
+//   cors: {
+//     origin: 'https://woolfgame.netlify.app/', // Replace with your client's origin
+//     methods: ['GET', 'POST'],
+//     credentials: true,
+//   },
+// });
 
 const PORT = process.env.PORT || 3001;
 
-// app.use(cors({
-//   origin: 'http://localhost:3000', // Replace with your client's origin
-//   methods: ['GET', 'POST'],
-//   credentials: true,
-//   optionsSuccessStatus: 204,
-// }));
-
 app.use(cors({
-  origin: 'https://woolfgame.netlify.app/', // Replace with your client's origin
+  origin: 'http://localhost:3000', // Replace with your client's origin
   methods: ['GET', 'POST'],
   credentials: true,
   optionsSuccessStatus: 204,
 }));
+
+// app.use(cors({
+//   origin: 'https://woolfgame.netlify.app/', // Replace with your client's origin
+//   methods: ['GET', 'POST'],
+//   credentials: true,
+//   optionsSuccessStatus: 204,
+// }));
 
 const gameRooms = new Map();
 
@@ -73,12 +71,13 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
+
+  console.log("connected");
 
   // Handle events from clients here
 
   // create a lobby
-  socket.on('createRoom', (roomID, userName) => {
+  socket.on('createRoom', (roomID, userName, callback) => {
 
     if (gameRooms.has(roomID)) {
       return;
@@ -88,9 +87,8 @@ io.on('connection', (socket) => {
     gameRooms.set(roomID, room);
 
     socket.join(roomID);
-    socket.emit('updateRoom', room);  
-
-    console.log(`Player ${userName} created room ${roomID}`);      
+    // socket.emit('updateRoom', room);  
+    callback(room);
   });
 
   // Join a lobby
@@ -101,7 +99,7 @@ io.on('connection', (socket) => {
     }
 
     const room = gameRooms.get(roomID);
-
+  
     if (room.length >= 8) {
       socket.emit('roomFull'); //ADD FRONTEND FXN TO CATCH THIS ERROR
       return;
@@ -111,8 +109,6 @@ io.on('connection', (socket) => {
     room.push({id: socket.id, userName: userName, room: roomID, host: false});
     gameRooms.set(roomID, room);
 
-    console.log(`Player ${userName} joined room ${roomID}`);
-
     // Emit updated player list to all clients in the lobby
     socket.emit('updateRoom', room);
     io.to(roomID).emit('updateRoom', room);
@@ -121,7 +117,8 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
 
-    console.log("a user disconnected");
+    console.log("disconnected");
+
     //find room of socket that disconnected
     for (const [room, players] of gameRooms) {
       const disconnectedPlayer = players.find(player => player.id === socket.id);
@@ -143,7 +140,6 @@ io.on('connection', (socket) => {
         //update all players in room with new list
         io.to(disconnectedPlayer.room).emit('updateRoom', updatedRoom);
 
-        console.log(`Player ${disconnectedPlayer.userName} disconnected from room: ${disconnectedPlayer.room}`);
       }
     }
 
@@ -154,11 +150,9 @@ io.on('connection', (socket) => {
 
   socket.on('checkRoomExistence', (roomID, callback) => {
     // Perform logic to check if the room exists
-    console.log("checking for room, ", roomID);
     if (gameRooms.has(roomID)) {
       callback(true); 
     } else {
-      console.log(`room ${roomID} doesn't exist`);
       callback(false);
     }
   });
@@ -209,7 +203,6 @@ io.on('connection', (socket) => {
       }
     }
 
-    console.log("game data generated for room: ", roomID);
     //SEND GAME DATA TO ALL PLAYERS
     io.to(roomID).emit('gameStarted', gameData);
 
@@ -222,13 +215,9 @@ io.on('connection', (socket) => {
 
   socket.on('checkTurnsComplete', (order, turnCount, roomID, callback) => {
 
-    console.log("checking turns for room, ", roomID);
-    console.log("turn num: ", turnCount, " total players: ", order.length);
     if (turnCount == order.length){
-      console.log("all turns completed in room: ", roomID);
       callback(true); 
     } else {
-      console.log("turns not completed in room: ", roomID);
       callback(false);
     }
 
@@ -236,7 +225,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('allTurnsComplete', (roomID) => {
-    console.log("starting voting in room: ", roomID);
     socket.emit('startVoting');
   });
 
