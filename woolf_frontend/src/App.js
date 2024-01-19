@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 
 import { useGameContext } from './GameContext';
 
-import Game from './GAME/Game';
-import Start from './START/Start';
+import Game from './Components/Game';
+import Start from './Components/Start';
 
 function App() {
 
