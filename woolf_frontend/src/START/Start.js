@@ -5,7 +5,7 @@ import EnterName from './EnterName'
 import CreateJoin from './CreateJoin'
 import EnterRoom from './EnterRoom'
 
-import logo from '../Assets/WoolfLogo.png';
+import logo from '/src/Assets/WoolfLogo.png';
 
 function Start() {
 

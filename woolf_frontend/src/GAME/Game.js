@@ -6,7 +6,7 @@ import GameBoard from './GameBoard';
 import Voting from './Voting';
 import Answer from './Answer';
 
-import logo from '../Assets/WoolfLogo.png';
+import logo from '/src/Assets/WoolfLogo.png';
 import GameInfo from './GameInfo';
 
 function Game() {
