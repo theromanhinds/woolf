@@ -96,8 +96,9 @@ io.on('connection', (socket) => {
   });
 
   //Join room
-  socket.on('joinRoom', (roomID, userName, callback) => {
+  socket.on('joinRoom', (roomID, userName) => {
     socket.join(roomID);
+    const room = gameRooms.get(roomID);
     room.push({id: socket.id, userName: userName, room: roomID, host: false});
     gameRooms.set(roomID, room);
     io.to(roomID).emit('updateRoom', room);

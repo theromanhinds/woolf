@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 function ClueBox({onNextStep}) {
 
-    const { socket, clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, resetClue, yourTurn, turnNumber, handleSetTurnNumber, checkTurn } = useGameContext();
+    const { socket, clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, resetClue, yourTurn, turnNumber, handleSetTurnNumber, checkTurn, currentTurn, handleSetCurrentTurn } = useGameContext();
 
     const handleClueChange = (event) => { handleSetClue(event.target.value); };
 
@@ -21,13 +21,14 @@ function ClueBox({onNextStep}) {
     //check for your turn at start of game
     useEffect(() => {
         checkTurn(turnNumber);
+        handleSetCurrentTurn(turnNumber);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
           socket.on('updateTurn', (newTurnNumber) => {
-            console.log("setting turn num: ", newTurnNumber);
             handleSetTurnNumber(newTurnNumber);
+            handleSetCurrentTurn(newTurnNumber);
             checkTurn(newTurnNumber);
           });
         
@@ -41,7 +42,6 @@ function ClueBox({onNextStep}) {
     //only called for receivers of a clue
     useEffect(() => {
         socket.on('newClue', (newClue) => {
-            console.log("new clue rec"); 
             handleNewClue(newClue);
         });
 
@@ -55,7 +55,6 @@ function ClueBox({onNextStep}) {
       useEffect(() => {
         
         socket.on('startVoting', () => {
-            console.log("starting the voting");
             onNextStep();
          });
                            
@@ -71,7 +70,7 @@ function ClueBox({onNextStep}) {
         <div className='ClueBox'>
         
         <h2 className='ClueText'>CLUES</h2>
-        <p className='TurnIndicator'>{yourTurn ? "It's YOUR turn!" : "It's NOT your turn!"}</p>
+        <p className='TurnIndicator'>{yourTurn ? "It's YOUR turn!" : `${currentTurn} is typing a clue.`}</p>
             <ul> {cluesList.map((submittedClue, index) => (
                 <li key={index}>{submittedClue}</li>
                 ))}

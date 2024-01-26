@@ -17,6 +17,7 @@ export const GameProvider = ({ children }) => {
   const [woolf, setWoolf] = useState('');
   const [topic, setTopic] = useState('');
   const [answer, setAnswer] = useState('');
+  const [currentTurn, setCurrentTurn] = useState('');
   const [clue, setClue] = useState('');
   const [myVote, setMyVote] = useState('');
   const [mostVoted, setMostVoted] = useState('');
@@ -43,6 +44,7 @@ export const GameProvider = ({ children }) => {
 
   const handleSetTurnNumber = (newTurnNumber) => { setTurnNumber(newTurnNumber) };
   const handleSetYourTurn = (boolean) => { setYourTurn(boolean); };
+  const handleSetCurrentTurn = (turnNumber) => { setCurrentTurn(order[turnNumber].userName); }
 
   const handleSetClue = (newClue) => { setClue(newClue); };
   const handleNewClue = (newClue) => { setCluesList((prevClues) => [...prevClues, newClue]); };
@@ -110,27 +112,23 @@ export const GameProvider = ({ children }) => {
   const handleJoinRoom = async () => {
 
     try {
-      console.log("trying to connect to server");
       const newSocket = await handleConnect();
       
       try {
-        console.log("trying to join room");
         const response = await new Promise((resolve, reject) => {
-          newSocket.emit('verifyJoinRoom', roomID, userName, (exists) => {
+          newSocket.emit('verifyJoinRoom', roomID, (exists) => {
             resolve(exists);
           });
         });
         
         if (response) {
           // Room exists, join it
-          console.log("room exists, joining");
           setIsHost(false);
-          console.log("socket emitting is: ", newSocket);
           newSocket.emit('joinRoom', roomID, userName);
           navigate(`/game/${roomID}`);
         } else {
-          console.error('Please enter a valid room ID.');
-          alert('Please Enter Valid Room Code.');
+          console.error('Room ID Invalid or Lobby Full.');
+          alert('Room ID Invalid or Lobby Full.');
         }
       } catch (error) {
         console.error('Error checking room existence:', error);
@@ -179,23 +177,18 @@ export const GameProvider = ({ children }) => {
     const newTurnNumber = turnNumber + 1;
 
     if (newTurnNumber === order.length) {
-      console.log("game over");
       socket.emit('allTurnsComplete', roomID);
     } else {
-      console.log("game NOT over");
       socket.emit('incrementTurn', newTurnNumber, roomID);
       setTurnNumber(newTurnNumber);
-      checkTurn(newTurnNumber);
     }
 
   };
 
   const checkTurn = (turnCount) => {
       if (socket.id === order[turnCount].id) {
-        console.log("it is your turn");
         handleSetYourTurn(true);
       } else {
-        console.log("it's NOT your turn");
         handleSetYourTurn(false);
       }
   };
@@ -261,6 +254,8 @@ export const GameProvider = ({ children }) => {
     handleClueSubmit,
     handleNewClue,
     yourTurn,
+    currentTurn,
+    handleSetCurrentTurn,
     nextTurn,
     turnNumber,
     checkTurn,

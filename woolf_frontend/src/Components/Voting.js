@@ -10,7 +10,6 @@ function Voting({onNextStep}) {
 
   useEffect(() => {
     socket.on('revealAnswer', (mostVoted) => {
-      console.log("revealing answer");
         handleSetMostVoted(mostVoted);
         onNextStep();
      });
