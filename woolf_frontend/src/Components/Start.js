@@ -11,20 +11,7 @@ function Start() {
 
     const [currentStep, setCurrentStep] = useState(1);
 
-    const handleNextStep = () => {
-        setCurrentStep((prevStep) => prevStep + 1);
-    };
-
-    //name entered? 
-        //false then show EnterName
-        //true then show CreateJoin
-
-    //Game created?
-        //false then show EnterRoom
-        //true then navigate to Game
-
-    //Room entered?
-        //then navigate to Game
+    const handleNextStep = () => { setCurrentStep((prevStep) => prevStep + 1); };
 
   return (
     <div className='StartContainer'>

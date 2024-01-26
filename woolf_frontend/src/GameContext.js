@@ -116,7 +116,7 @@ export const GameProvider = ({ children }) => {
       try {
         console.log("trying to join room");
         const response = await new Promise((resolve, reject) => {
-          newSocket.emit('checkRoomExistence', roomID, (exists) => {
+          newSocket.emit('verifyJoinRoom', roomID, userName, (exists) => {
             resolve(exists);
           });
         });

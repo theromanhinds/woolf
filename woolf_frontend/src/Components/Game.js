@@ -14,7 +14,6 @@ function Game() {
   const [currentStep, setCurrentStep] = useState(1);
 
   const handleNextStep = () => {
-      console.log("moving to next page");
       setCurrentStep((prevStep) => prevStep + 1);
   };
 

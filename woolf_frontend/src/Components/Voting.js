@@ -6,14 +6,9 @@ function Voting({onNextStep}) {
 
   const { socket, board, order, cluesList, voted, handleVoted, myVote, handleSetMostVoted, } = useGameContext();
 
-  const handleVoteButtonClick = (index) => {
-    console.log("vote button clicked");
-    handleVoted(order[index].userName);
-    console.log("you voted for :", order[index].userName);
-  }
+  const handleVoteButtonClick = (index) => { handleVoted(order[index].userName); };
 
   useEffect(() => {
-        
     socket.on('revealAnswer', (mostVoted) => {
       console.log("revealing answer");
         handleSetMostVoted(mostVoted);
@@ -27,14 +22,15 @@ function Voting({onNextStep}) {
 
   return (
     <div className='VotingContainer'>
-      <h1 className='GameText'>VOTING</h1>
+      <h1 className='VoteText'>VOTING</h1>
         <div className="Board">
               {board.map((word, index) => (
               <div key={index} className="BoardWord">
               {word} </div>
               ))}
           </div>
-          <p>{voted ? `You voted for ${myVote}` : "Vote out the Woolf!"}</p>
+          <p className='VoteIndicator'>{voted ? `You voted for ${myVote}` : "Vote out the Woolf!"}</p>
+          <hr className='Divider'></hr>
             <ul className='ClueList'> {cluesList.map((submittedClue, index) => (
                 <li key={index}>
                   {submittedClue}

@@ -13,27 +13,24 @@ function ClueBox({onNextStep}) {
         if (clue) {
             if (clue.trim() !== '') {
             handleClueSubmit(clue);
-            resetClue(); // Clear the input after submitting
+            resetClue();
             }
         }
     }
 
-    // //check for your turn at start of game
+    //check for your turn at start of game
     useEffect(() => {
         checkTurn(turnNumber);
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        // Subscribe to socket events
           socket.on('updateTurn', (newTurnNumber) => {
             console.log("setting turn num: ", newTurnNumber);
             handleSetTurnNumber(newTurnNumber);
             checkTurn(newTurnNumber);
           });
         
-        // Clean up subscriptions on component unmount
         return () => {
             socket.off('updateTurn');
         };
@@ -41,17 +38,15 @@ function ClueBox({onNextStep}) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
     
-    
     //only called for receivers of a clue
     useEffect(() => {
         socket.on('newClue', (newClue) => {
             console.log("new clue rec"); 
             handleNewClue(newClue);
-            // nextTurn(); 
         });
 
         return () => {
-            socket.off('newClue');  // Clean up any subscriptions or side effects when the component unmounts
+            socket.off('newClue'); 
         };
         
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,13 +66,12 @@ function ClueBox({onNextStep}) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
 
-
   return (
     <div className='ClueBoxContainer'>
         <div className='ClueBox'>
         
-        <h2 className='BoardText'>CLUES</h2>
-        <p>{yourTurn ? "It's YOUR turn!" : "It's NOT your turn!"}</p>
+        <h2 className='ClueText'>CLUES</h2>
+        <p className='TurnIndicator'>{yourTurn ? "It's YOUR turn!" : "It's NOT your turn!"}</p>
             <ul> {cluesList.map((submittedClue, index) => (
                 <li key={index}>{submittedClue}</li>
                 ))}
