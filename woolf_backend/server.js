@@ -104,11 +104,11 @@ io.on('connection', (socket) => {
     io.to(roomID).emit('updateRoom', room);
   });
 
-  //Get room when host joins (REMOVED)
-  // socket.on('getRoom', (roomID) => {
-  //   room = gameRooms.get(roomID);
-  //   socket.emit('updateRoom', room);
-  // });
+  //NEED TO UNDERSTAND WHY THIS FUNCTION IS NEEDED
+  socket.on('getRoom', (roomID) => {
+    room = gameRooms.get(roomID);
+    socket.emit('updateRoom', room);
+  });
 
   socket.on('startGame', (roomID) => {
     
@@ -236,7 +236,7 @@ io.on('connection', (socket) => {
 
         gameRooms.set(disconnectedPlayer.room, updatedRoom);
         //update all players in room with new list
-        io.to(disconnectedPlayer.room).emit('updateRoom', updatedRoom);
+        io.to(disconnectedPlayer.room).emit('playerDisconnected', updatedRoom, disconnectedPlayer.userName, disconnectedPlayer.id);
 
       }
     }

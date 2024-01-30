@@ -6,6 +6,7 @@ function Voting({onNextStep}) {
 
   const { socket, board, order, cluesList, voted, handleVoted, myVote, handleSetMostVoted, } = useGameContext();
 
+  //FIX VOITING BUTTON FOR MISSING PLAYERS
   const handleVoteButtonClick = (index) => { handleVoted(order[index].userName); };
 
   useEffect(() => {

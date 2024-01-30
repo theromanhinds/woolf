@@ -4,7 +4,11 @@ import { useEffect } from 'react';
 
 function ClueBox({onNextStep}) {
 
-    const { socket, clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, resetClue, yourTurn, turnNumber, handleSetTurnNumber, checkTurn, currentTurn, handleSetCurrentTurn } = useGameContext();
+    const { socket, handleSetLobby, lobby, handleSetIsHost, 
+      clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, 
+      resetClue, yourTurn, turnNumber, handleSetTurnNumber, checkTurn, 
+      currentTurn, setCurrentTurn, playerDisconnectedMessage, 
+      handleRemovePlayer } = useGameContext();
 
     const handleClueChange = (event) => { handleSetClue(event.target.value); };
 
@@ -21,14 +25,42 @@ function ClueBox({onNextStep}) {
     //check for your turn at start of game
     useEffect(() => {
         checkTurn(turnNumber);
-        handleSetCurrentTurn(turnNumber);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+
+    useEffect(() => {
+      socket.on('playerDisconnected', (newRoomData, playerName, playerID) => {
+          try {
+            console.log("new lobby: ", newRoomData);
+              handleSetLobby(newRoomData);
+              playerDisconnectedMessage(playerName);
+              handleRemovePlayer(playerID);
+          } catch (error) {
+              console.error('Error processing disconnect event:', error);
+          }
+      });
+
+      if (lobby.length > 0){
+          const hostPlayer = lobby.find(player => player.host === true);
+          if (hostPlayer.id === socket.id) {
+              handleSetIsHost(true);
+          } else {
+              handleSetIsHost(false);
+          }
+      }
+
+      return () => {
+        socket.off('playerDisconnected');
+    };
+
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lobby]);
+    
 
     useEffect(() => {
           socket.on('updateTurn', (newTurnNumber) => {
             handleSetTurnNumber(newTurnNumber);
-            handleSetCurrentTurn(newTurnNumber);
             checkTurn(newTurnNumber);
           });
         
@@ -55,6 +87,7 @@ function ClueBox({onNextStep}) {
       useEffect(() => {
         
         socket.on('startVoting', () => {
+            setCurrentTurn('');
             onNextStep();
          });
                            

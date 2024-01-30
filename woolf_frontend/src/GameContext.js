@@ -23,6 +23,7 @@ export const GameProvider = ({ children }) => {
   const [mostVoted, setMostVoted] = useState('');
 
   const [turnNumber, setTurnNumber] = useState(0);
+  const [gameOverLength, setGameOverLength] = useState(0);
 
   const [isHost, setIsHost] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
@@ -44,7 +45,10 @@ export const GameProvider = ({ children }) => {
 
   const handleSetTurnNumber = (newTurnNumber) => { setTurnNumber(newTurnNumber) };
   const handleSetYourTurn = (boolean) => { setYourTurn(boolean); };
-  const handleSetCurrentTurn = (turnNumber) => { setCurrentTurn(order[turnNumber].userName); }
+  const handleSetCurrentTurn = (turnNumber) => { 
+    console.log("it's ", order[turnNumber].userName, " turn.");
+    setCurrentTurn(order[turnNumber].userName); 
+  }
 
   const handleSetClue = (newClue) => { setClue(newClue); };
   const handleNewClue = (newClue) => { setCluesList((prevClues) => [...prevClues, newClue]); };
@@ -151,6 +155,11 @@ export const GameProvider = ({ children }) => {
     setAnswer(newGameData.answer);
     setOrder(newGameData.players);
 
+    const gameOver = newGameData.players;
+
+    console.log("game over length: ", gameOver.length);
+    setGameOverLength(gameOver.length);
+
     for(var obj of newGameData.players) {
       if (obj.id === socket.id) {
         setRole(obj.role);
@@ -162,6 +171,34 @@ export const GameProvider = ({ children }) => {
 
   };
 
+  // HANDLE REMOVE PLAYER //////////////////////////
+  
+  const handleRemovePlayer = (removedID) => {
+
+    const removedPlayer = order.find(player => player.id === removedID);
+    
+    if (order[turnNumber].userName === removedPlayer.userName) {
+      skipTurn(removedID);
+    }
+    
+    const newOrder = order.filter((player) => player.id !== removedID);
+    setOrder(newOrder);
+    console.log("updated order: ", newOrder);
+    
+
+  };
+
+  const skipTurn = () => {
+
+    setTurnNumber((prev) => {
+      console.log("prev turn num: ", prev);
+      const newTurnNumber = prev + 1;
+      checkTurn(newTurnNumber);
+      return newTurnNumber;
+    });
+    
+  };
+
   
   // HANDLE CLUE SUBMIT //////////////////////////
   const handleClueSubmit = (clue) => {
@@ -170,13 +207,18 @@ export const GameProvider = ({ children }) => {
     nextTurn();
   };
 
+  const playerDisconnectedMessage = (playerName) => {
+    let announcement = `${playerName} disconnected!`;
+    handleNewClue(announcement);
+  }
+
   // HANDLE TURN UPDATES //////////////////////////
 
   const nextTurn = () => {
     // Increment turn number and emit the update to all clients
     const newTurnNumber = turnNumber + 1;
 
-    if (newTurnNumber === order.length) {
+    if (newTurnNumber === gameOverLength) {
       socket.emit('allTurnsComplete', roomID);
     } else {
       socket.emit('incrementTurn', newTurnNumber, roomID);
@@ -186,10 +228,17 @@ export const GameProvider = ({ children }) => {
   };
 
   const checkTurn = (turnCount) => {
+
+    console.log("checking turn: ", turnCount);
+
+    handleSetCurrentTurn(turnCount);
+
       if (socket.id === order[turnCount].id) {
         handleSetYourTurn(true);
+        console.log("turn true");
       } else {
         handleSetYourTurn(false);
+        console.log("turn false");
       }
   };
   
@@ -216,6 +265,7 @@ export const GameProvider = ({ children }) => {
     setTopic('');
     setAnswer('');
     setOrder([]);
+    setCurrentTurn('');
     setCluesList([]);
     setTurnNumber(0);
     setVoted(false);
@@ -247,6 +297,7 @@ export const GameProvider = ({ children }) => {
     topic,
     answer,
     order, 
+    playerDisconnectedMessage,
     clue,
     handleSetClue,
     resetClue,
@@ -255,6 +306,7 @@ export const GameProvider = ({ children }) => {
     handleNewClue,
     yourTurn,
     currentTurn,
+    setCurrentTurn,
     handleSetCurrentTurn,
     nextTurn,
     turnNumber,
@@ -268,6 +320,7 @@ export const GameProvider = ({ children }) => {
     ready,
     handleReady,
     resetGame,
+    handleRemovePlayer,
   };
   
   return (
