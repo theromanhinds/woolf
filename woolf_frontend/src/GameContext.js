@@ -49,11 +49,7 @@ export const GameProvider = ({ children }) => {
   const handleSetCurrentTurn = (turnNumber) => { setCurrentTurn(order[turnNumber].userName); };
 
   const handleSetClue = (newClue) => { setClue(newClue); };
-  const handleNewClue = (newClue, playerName) => { 
-    setCluesList((prevClues) => [...prevClues, newClue]);
-    setClueOrder((prevClueOrder) => [...prevClueOrder, playerName])
-    
-  };
+  const handleNewClue = (newClue) => { setCluesList((prevClues) => [...prevClues, newClue]); };
   const resetClue = () => { setClue(''); };
 
   const handleSetMostVoted = (mostVoted) => { setMostVoted(mostVoted); };
@@ -177,45 +173,22 @@ export const GameProvider = ({ children }) => {
 
   // HANDLE REMOVE PLAYER //////////////////////////
   
-  const handleRemovePlayer = (removedID) => {
+  const handleRemovePlayer = (newLobby, playerName) => {
 
-    const removedPlayer = order.find(player => player.id === removedID);
-    
-    if (order[turnNumber].userName === removedPlayer.userName) {
-      skipTurn(removedID);
-    } else {
-      setGameOverLength((prev) => prev - 1);
-    }
-    
-    const newOrder = order.filter((player) => player.id !== removedID);
-    setOrder(newOrder);
+    handleSetLobby(newLobby);
+    alert(`${playerName} disconnected! Returning to lobby.`);
+    resetGame();
+    socket.emit("")
 
-    console.log("updated order: ", newOrder);
-  };
-
-  const skipTurn = () => {
-
-    setTurnNumber((prev) => {
-      const newTurnNumber = prev + 1;
-      checkTurn(newTurnNumber);
-      return newTurnNumber;
-    });
-    
   };
 
   
   // HANDLE CLUE SUBMIT //////////////////////////
   const handleClueSubmit = (clue) => {
     let submission = `${userName} says: ${clue}`;
-    console.log("order when submitting clue: ", order);
-    socket.emit("clueSubmitted", submission, userName, roomID, order);
+    socket.emit("clueSubmitted", submission, userName, roomID);
     nextTurn();
   };
-
-  const playerDisconnectedMessage = (playerName) => {
-    let announcement = `${playerName} disconnected!`;
-    handleNewClue(announcement, playerName);
-  }
 
   // HANDLE TURN UPDATES //////////////////////////
 
@@ -232,12 +205,11 @@ export const GameProvider = ({ children }) => {
 
   };
 
-  const checkTurn = (turnCount, currentOrder) => {
+  const checkTurn = (turnCount) => {
 
     handleSetCurrentTurn(turnCount);
 
-    console.log("turn number: ", turnCount, "and using this order: ", currentOrder);
-    if (socket.id === currentOrder[turnCount].id) {
+    if (socket.id === order[turnCount].id) {
       console.log("turn true");
       handleSetYourTurn(true);
     } else {
@@ -303,7 +275,6 @@ export const GameProvider = ({ children }) => {
     answer,
     order,
     clueOrder,
-    playerDisconnectedMessage,
     clue,
     handleSetClue,
     resetClue,

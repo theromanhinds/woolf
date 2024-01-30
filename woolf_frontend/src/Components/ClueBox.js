@@ -2,13 +2,12 @@ import React from 'react';
 import { useGameContext } from '../GameContext';
 import { useEffect } from 'react';
 
-function ClueBox({onNextStep}) {
+function ClueBox({onNextStep, resetStep}) {
 
-    const { socket, handleSetLobby, lobby, handleSetIsHost, order,
+    const { socket, lobby, handleSetIsHost, order,
       clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, 
       resetClue, yourTurn, turnNumber, handleSetTurnNumber, checkTurn, 
-      currentTurn, setCurrentTurn, playerDisconnectedMessage, 
-      handleRemovePlayer } = useGameContext();
+      currentTurn, setCurrentTurn, handleRemovePlayer } = useGameContext();
 
     const handleClueChange = (event) => { handleSetClue(event.target.value); };
 
@@ -32,10 +31,8 @@ function ClueBox({onNextStep}) {
     useEffect(() => {
       socket.on('playerDisconnected', (newRoomData, playerName, playerID) => {
           try {
-            console.log("new lobby: ", newRoomData);
-              handleSetLobby(newRoomData);
-              playerDisconnectedMessage(playerName);
-              handleRemovePlayer(playerID);
+              handleRemovePlayer(newRoomData, playerName);
+              resetStep();
           } catch (error) {
               console.error('Error processing disconnect event:', error);
           }
@@ -73,8 +70,8 @@ function ClueBox({onNextStep}) {
     
     //only called for receivers of a clue
     useEffect(() => {
-        socket.on('newClue', (newClue, name) => {
-            handleNewClue(newClue, name);
+        socket.on('newClue', (newClue) => {
+            handleNewClue(newClue);
         });
 
         return () => {

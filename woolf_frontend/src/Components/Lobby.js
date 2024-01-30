@@ -15,17 +15,19 @@ function Lobby({onNextStep}) {
             alert("Need at least 3 players to start!");
         }
 
-    }  
+    }
+    
     
     // Listen for updates to the lobby
     useEffect(() => {
-        socket.on('updateRoom', (newRoomData) => {
-            try {
-                handleSetLobby(newRoomData);
-            } catch (error) {
-                console.error('Error processing initialPlayerList event:', error);
-            }
-        });
+        
+            socket.on('updateRoom', (newRoomData) => {
+                try {
+                    handleSetLobby(newRoomData);
+                } catch (error) {
+                    console.error('Error processing initialPlayerList event:', error);
+                }
+            });
         
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [lobby]);

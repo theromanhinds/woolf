@@ -4,7 +4,7 @@ import { useGameContext } from '../GameContext'
 import ClueBox from './ClueBox';
 import RoundInfo from './RoundInfo';
 
-function GameBoard({handleNextStep}) {
+function GameBoard({handleNextStep, resetStep}) {
 
   const { role, topic, answer, board } = useGameContext();
 
@@ -35,7 +35,7 @@ function GameBoard({handleNextStep}) {
             ))}
         </div>
         <hr className='Divider'></hr>
-        <ClueBox onNextStep={handleNextStep}/>
+        <ClueBox onNextStep={handleNextStep} resetStep={resetStep}/>
     </div>
   )
 }

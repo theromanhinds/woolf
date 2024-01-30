@@ -2,15 +2,41 @@ import React from 'react'
 import { useEffect } from 'react';
 import { useGameContext } from '../GameContext'
 
-function Voting({onNextStep}) {
+function Voting({onNextStep, resetStep}) {
 
-  const { socket, board, clueOrder, cluesList, voted, handleVoted, myVote, handleSetMostVoted, } = useGameContext();
+  const { socket, lobby, handleRemovePlayer, handleSetIsHost, board, clueOrder, cluesList, voted, handleVoted, myVote, handleSetMostVoted, } = useGameContext();
 
   //FIX VOITING BUTTON FOR MISSING PLAYERS
   const handleVoteButtonClick = (index) => { 
     console.log("voting for: ", clueOrder[index].userName);
     handleVoted(clueOrder[index].userName); 
   };
+
+  useEffect(() => {
+    socket.on('playerDisconnected', (newRoomData, playerName, playerID) => {
+        try {
+            handleRemovePlayer(newRoomData, playerName);
+            resetStep();
+        } catch (error) {
+            console.error('Error processing disconnect event:', error);
+        }
+    });
+
+    if (lobby.length > 0){
+        const hostPlayer = lobby.find(player => player.host === true);
+        if (hostPlayer.id === socket.id) {
+            handleSetIsHost(true);
+        } else {
+            handleSetIsHost(false);
+        }
+    }
+
+    return () => {
+      socket.off('playerDisconnected');
+  };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [lobby]);
 
   useEffect(() => {
     socket.on('revealAnswer', (mostVoted) => {
