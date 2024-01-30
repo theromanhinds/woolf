@@ -34,6 +34,7 @@ export const GameProvider = ({ children }) => {
   const [lobby, setLobby] = useState([]);
   const [board, setBoard] = useState([]);
   const [order, setOrder] = useState([]);
+  const [clueOrder, setClueOrder] = useState([]);
   const [cluesList, setCluesList] = useState([]);
 
   // STATE HANDLERS //////////////////////////
@@ -45,13 +46,14 @@ export const GameProvider = ({ children }) => {
 
   const handleSetTurnNumber = (newTurnNumber) => { setTurnNumber(newTurnNumber) };
   const handleSetYourTurn = (boolean) => { setYourTurn(boolean); };
-  const handleSetCurrentTurn = (turnNumber) => { 
-    console.log("it's ", order[turnNumber].userName, " turn.");
-    setCurrentTurn(order[turnNumber].userName); 
-  }
+  const handleSetCurrentTurn = (turnNumber) => { setCurrentTurn(order[turnNumber].userName); };
 
   const handleSetClue = (newClue) => { setClue(newClue); };
-  const handleNewClue = (newClue) => { setCluesList((prevClues) => [...prevClues, newClue]); };
+  const handleNewClue = (newClue, playerName) => { 
+    setCluesList((prevClues) => [...prevClues, newClue]);
+    setClueOrder((prevClueOrder) => [...prevClueOrder, playerName])
+    
+  };
   const resetClue = () => { setClue(''); };
 
   const handleSetMostVoted = (mostVoted) => { setMostVoted(mostVoted); };
@@ -154,10 +156,12 @@ export const GameProvider = ({ children }) => {
     setTopic(newGameData.topic);
     setAnswer(newGameData.answer);
     setOrder(newGameData.players);
+    console.log("original game order:", newGameData.players);
+
+    setClueOrder(newGameData.players);
 
     const gameOver = newGameData.players;
 
-    console.log("game over length: ", gameOver.length);
     setGameOverLength(gameOver.length);
 
     for(var obj of newGameData.players) {
@@ -179,19 +183,19 @@ export const GameProvider = ({ children }) => {
     
     if (order[turnNumber].userName === removedPlayer.userName) {
       skipTurn(removedID);
+    } else {
+      setGameOverLength((prev) => prev - 1);
     }
     
     const newOrder = order.filter((player) => player.id !== removedID);
     setOrder(newOrder);
-    console.log("updated order: ", newOrder);
-    
 
+    console.log("updated order: ", newOrder);
   };
 
   const skipTurn = () => {
 
     setTurnNumber((prev) => {
-      console.log("prev turn num: ", prev);
       const newTurnNumber = prev + 1;
       checkTurn(newTurnNumber);
       return newTurnNumber;
@@ -203,13 +207,14 @@ export const GameProvider = ({ children }) => {
   // HANDLE CLUE SUBMIT //////////////////////////
   const handleClueSubmit = (clue) => {
     let submission = `${userName} says: ${clue}`;
-    socket.emit("clueSubmitted", submission, roomID);
+    console.log("order when submitting clue: ", order);
+    socket.emit("clueSubmitted", submission, userName, roomID, order);
     nextTurn();
   };
 
   const playerDisconnectedMessage = (playerName) => {
     let announcement = `${playerName} disconnected!`;
-    handleNewClue(announcement);
+    handleNewClue(announcement, playerName);
   }
 
   // HANDLE TURN UPDATES //////////////////////////
@@ -227,19 +232,18 @@ export const GameProvider = ({ children }) => {
 
   };
 
-  const checkTurn = (turnCount) => {
-
-    console.log("checking turn: ", turnCount);
+  const checkTurn = (turnCount, currentOrder) => {
 
     handleSetCurrentTurn(turnCount);
 
-      if (socket.id === order[turnCount].id) {
-        handleSetYourTurn(true);
-        console.log("turn true");
-      } else {
-        handleSetYourTurn(false);
-        console.log("turn false");
-      }
+    console.log("turn number: ", turnCount, "and using this order: ", currentOrder);
+    if (socket.id === currentOrder[turnCount].id) {
+      console.log("turn true");
+      handleSetYourTurn(true);
+    } else {
+      console.log("turn false");
+      handleSetYourTurn(false);
+    }
   };
   
   // HANDLE VOTE //////////////////////////
@@ -265,6 +269,7 @@ export const GameProvider = ({ children }) => {
     setTopic('');
     setAnswer('');
     setOrder([]);
+    setClueOrder([]);
     setCurrentTurn('');
     setCluesList([]);
     setTurnNumber(0);
@@ -296,7 +301,8 @@ export const GameProvider = ({ children }) => {
     board,
     topic,
     answer,
-    order, 
+    order,
+    clueOrder,
     playerDisconnectedMessage,
     clue,
     handleSetClue,

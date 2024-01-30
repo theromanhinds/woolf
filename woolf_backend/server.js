@@ -162,8 +162,8 @@ io.on('connection', (socket) => {
 
   });
   
-  socket.on('clueSubmitted', (clue, roomID) => {
-    io.to(roomID).emit("newClue", clue);
+  socket.on('clueSubmitted', (clue, name, roomID, order) => {
+    io.to(roomID).emit("newClue", clue, name, order);
   });
 
   socket.on('incrementTurn', (newTurnNumber, roomID) => {

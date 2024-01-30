@@ -4,10 +4,13 @@ import { useGameContext } from '../GameContext'
 
 function Voting({onNextStep}) {
 
-  const { socket, board, order, cluesList, voted, handleVoted, myVote, handleSetMostVoted, } = useGameContext();
+  const { socket, board, clueOrder, cluesList, voted, handleVoted, myVote, handleSetMostVoted, } = useGameContext();
 
   //FIX VOITING BUTTON FOR MISSING PLAYERS
-  const handleVoteButtonClick = (index) => { handleVoted(order[index].userName); };
+  const handleVoteButtonClick = (index) => { 
+    console.log("voting for: ", clueOrder[index].userName);
+    handleVoted(clueOrder[index].userName); 
+  };
 
   useEffect(() => {
     socket.on('revealAnswer', (mostVoted) => {

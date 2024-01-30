@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 function ClueBox({onNextStep}) {
 
-    const { socket, handleSetLobby, lobby, handleSetIsHost, 
+    const { socket, handleSetLobby, lobby, handleSetIsHost, order,
       clue, cluesList, handleSetClue, handleClueSubmit, handleNewClue, 
       resetClue, yourTurn, turnNumber, handleSetTurnNumber, checkTurn, 
       currentTurn, setCurrentTurn, playerDisconnectedMessage, 
@@ -24,7 +24,7 @@ function ClueBox({onNextStep}) {
 
     //check for your turn at start of game
     useEffect(() => {
-        checkTurn(turnNumber);
+        checkTurn(turnNumber, order);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -59,9 +59,9 @@ function ClueBox({onNextStep}) {
     
 
     useEffect(() => {
-          socket.on('updateTurn', (newTurnNumber) => {
+          socket.on('updateTurn', (newTurnNumber, currentOrder) => {
             handleSetTurnNumber(newTurnNumber);
-            checkTurn(newTurnNumber);
+            checkTurn(newTurnNumber, currentOrder);
           });
         
         return () => {
@@ -73,8 +73,8 @@ function ClueBox({onNextStep}) {
     
     //only called for receivers of a clue
     useEffect(() => {
-        socket.on('newClue', (newClue) => {
-            handleNewClue(newClue);
+        socket.on('newClue', (newClue, name) => {
+            handleNewClue(newClue, name);
         });
 
         return () => {
